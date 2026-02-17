@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
-import { LogOut, CheckCircle, XCircle, Plus, Send, UserPlus, FileSpreadsheet, Info, Download, Trophy, Target, Users, Search, Medal, School } from 'lucide-react';
+import { LogOut, CheckCircle, XCircle, Plus, Send, UserPlus, FileSpreadsheet, Info, Download, Trophy, Target, Users, Search, Medal, School, Rocket } from 'lucide-react';
 import { CLASSES_LIST } from '../constants';
 
 type Tab = 'overview' | 'tasks' | 'students' | 'leaderboard';
@@ -88,8 +88,8 @@ export const TeacherDashboard: React.FC = () => {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = "Nama Siswa,Password";
-    const examples = "\nAhmad Dahlan,12345\nSiti Walidah,rahasia123\nKi Hajar Dewantara,kodepuasa";
+    const headers = "Nama Siswa";
+    const examples = "\nAhmad Dahlan\nSiti Walidah\nKi Hajar Dewantara";
     const blob = new Blob([headers + examples], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -124,55 +124,45 @@ export const TeacherDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-black flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#0B0B19] font-sans text-white flex flex-col md:flex-row">
       
       {/* Sidebar Navigation */}
-      <aside className="bg-white w-full md:w-64 border-r border-slate-200 flex flex-col sticky top-0 h-auto md:h-screen z-30">
-        <div className="p-6 border-b border-slate-100">
+      <aside className="bg-[#151525] w-full md:w-64 border-r border-white/10 flex flex-col sticky top-0 h-auto md:h-screen z-30 shadow-2xl">
+        <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-emerald-200">
-              G
+            <div className="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(8,145,178,0.5)]">
+              K
             </div>
             <div>
-              <h1 className="font-bold text-black text-lg leading-tight">{user?.name}</h1>
-              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                Kelas {user?.selectedClass}
+              <h1 className="font-bold text-white text-lg leading-tight">{user?.name}</h1>
+              <span className="text-xs font-bold text-cyan-400 bg-cyan-900/30 px-2 py-0.5 rounded-full border border-cyan-500/30">
+                Sektor {user?.selectedClass}
               </span>
             </div>
           </div>
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
-          <button 
-            onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'overview' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
-          >
-            <School size={20} /> Ringkasan
-          </button>
-          <button 
-            onClick={() => setActiveTab('tasks')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'tasks' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
-          >
-            <Target size={20} /> Tugas Harian
-          </button>
-          <button 
-            onClick={() => setActiveTab('students')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'students' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
-          >
-            <Users size={20} /> Manajemen Siswa
-          </button>
-          <button 
-            onClick={() => setActiveTab('leaderboard')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'leaderboard' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
-          >
-            <Trophy size={20} /> Peringkat
-          </button>
+          {[
+            { id: 'overview', icon: School, label: 'Radar Utama' },
+            { id: 'tasks', icon: Target, label: 'Misi Harian' },
+            { id: 'students', icon: Users, label: 'Kru Astronaut' },
+            { id: 'leaderboard', icon: Trophy, label: 'Peringkat' },
+          ].map((item) => (
+            <button 
+              key={item.id}
+              onClick={() => setActiveTab(item.id as Tab)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === item.id ? 'bg-cyan-600/20 text-cyan-300 border border-cyan-500/30 shadow-[inset_0_0_10px_rgba(8,145,178,0.2)]' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+            >
+              <item.icon size={20} /> {item.label}
+            </button>
+          ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-100">
+        <div className="p-4 border-t border-white/10">
           <button 
             onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-600 hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-400 hover:bg-red-900/20 hover:text-red-300 transition-colors"
           >
             <LogOut size={20} /> Keluar
           </button>
@@ -180,26 +170,28 @@ export const TeacherDashboard: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
         
         {/* --- VIEW: OVERVIEW --- */}
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="text-2xl font-extrabold text-black">Ringkasan Kelas</h2>
+            <h2 className="text-2xl font-extrabold text-white flex items-center gap-2">
+               <Rocket className="text-purple-400" /> Status Sektor
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p className="text-slate-500 text-sm font-bold">Total Siswa</p>
-                <p className="text-4xl font-extrabold text-black mt-2">{classStudents.length}</p>
+              <div className="glass-panel p-6 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.2)]">
+                <p className="text-slate-400 text-sm font-bold uppercase tracking-wider">Total Astronaut</p>
+                <p className="text-4xl font-extrabold text-white mt-2 drop-shadow-md">{classStudents.length}</p>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p className="text-slate-500 text-sm font-bold">Jurnal Terisi Hari Ini</p>
-                <p className="text-4xl font-extrabold text-emerald-600 mt-2">
+              <div className="glass-panel p-6 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.2)] border-cyan-500/30">
+                <p className="text-slate-400 text-sm font-bold uppercase tracking-wider">Laporan Masuk</p>
+                <p className="text-4xl font-extrabold text-cyan-400 mt-2 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">
                   {classStudents.filter(s => s.journalEntry.length > 0).length}
                 </p>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p className="text-slate-500 text-sm font-bold">Rata-rata XP Kelas</p>
-                <p className="text-4xl font-extrabold text-amber-500 mt-2">
+              <div className="glass-panel p-6 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.2)] border-amber-500/30">
+                <p className="text-slate-400 text-sm font-bold uppercase tracking-wider">Rata-rata XP</p>
+                <p className="text-4xl font-extrabold text-amber-400 mt-2 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">
                   {classStudents.length > 0 
                     ? Math.round(classStudents.reduce((acc, curr) => acc + curr.totalXp, 0) / classStudents.length) 
                     : 0}
@@ -207,23 +199,23 @@ export const TeacherDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Actions for Import/Add */}
-            <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
-              <h3 className="font-bold text-lg mb-4 text-emerald-900">Setup Data Siswa</h3>
+            {/* Quick Actions */}
+            <div className="bg-[#1A1A2E] rounded-2xl p-6 border border-white/10">
+              <h3 className="font-bold text-lg mb-4 text-cyan-200">Konfigurasi Data</h3>
               <div className="flex flex-wrap gap-3">
                 <button 
                   onClick={() => setShowAddModal(true)}
-                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition-all"
+                  className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg font-bold shadow-[0_0_15px_rgba(8,145,178,0.4)] transition-all"
                 >
                   <UserPlus size={18} /> Tambah Manual
                 </button>
                 <div className="relative">
                   <input type="file" accept=".csv,.txt" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
-                  <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-lg font-bold shadow-sm">
+                  <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 bg-white/5 border border-white/20 text-cyan-300 hover:bg-white/10 px-4 py-2 rounded-lg font-bold transition-all">
                     <FileSpreadsheet size={18} /> Import Excel
                   </button>
                 </div>
-                <button onClick={handleDownloadTemplate} className="flex items-center gap-2 text-emerald-700 hover:underline px-4 py-2 text-sm font-bold">
+                <button onClick={handleDownloadTemplate} className="flex items-center gap-2 text-slate-400 hover:text-white px-4 py-2 text-sm font-bold hover:underline">
                   <Download size={16} /> Download Template
                 </button>
               </div>
@@ -234,47 +226,47 @@ export const TeacherDashboard: React.FC = () => {
         {/* --- VIEW: TASKS --- */}
         {activeTab === 'tasks' && (
           <div className="space-y-6 animate-fade-in">
-             <h2 className="text-2xl font-extrabold text-black">Manajemen Tugas Harian</h2>
+             <h2 className="text-2xl font-extrabold text-white">Pusat Misi</h2>
              
-             <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-2xl">
+             <div className="glass-panel p-8 rounded-2xl max-w-2xl bg-[#1A1A2E]/80">
                 <div className="mb-6">
-                  <h3 className="font-bold text-lg text-black mb-2 flex items-center gap-2">
-                    <Target className="text-amber-500" /> Buat Tugas Baru
+                  <h3 className="font-bold text-lg text-white mb-2 flex items-center gap-2">
+                    <Target className="text-amber-400" /> Buat Misi Baru
                   </h3>
-                  <p className="text-slate-500 text-sm">Tugas ini akan muncul di dashboard siswa sebagai "Tugas Tambahan" bernilai +50 XP.</p>
+                  <p className="text-slate-400 text-sm">Misi akan muncul di dashboard astronaut sebagai "Misi Spesial" bernilai +50 XP.</p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-black mb-1">Target Kelas</label>
+                    <label className="block text-sm font-bold text-cyan-200 mb-1">Target Sektor</label>
                     <select 
                       value={bulkTargetClass}
                       onChange={(e) => setBulkTargetClass(e.target.value)}
-                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                      className="w-full p-3 rounded-xl bg-black/40 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium"
                     >
-                      <option value="ALL">Semua Kelas</option>
+                      <option value="ALL" className="bg-slate-900">Semua Sektor</option>
                       {CLASSES_LIST.map(c => (
-                        <option key={c} value={c}>Kelas {c}</option>
+                        <option key={c} value={c} className="bg-slate-900">Kelas {c}</option>
                       ))}
                     </select>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-bold text-black mb-1">Isi Tugas</label>
+                    <label className="block text-sm font-bold text-cyan-200 mb-1">Instruksi Misi</label>
                     <textarea 
                       value={bulkTaskInput}
                       onChange={(e) => setBulkTaskInput(e.target.value)}
                       placeholder="Contoh: Hafalkan Surat Al-Maun ayat 1-3..."
-                      className="w-full p-3 h-32 rounded-xl bg-slate-50 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium resize-none"
+                      className="w-full p-3 h-32 rounded-xl bg-black/40 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium resize-none placeholder-slate-600"
                     />
                   </div>
 
                   <button 
                     onClick={handleBulkAssign}
                     disabled={isBulkSending || !bulkTaskInput}
-                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold rounded-xl shadow-md transition-all flex justify-center items-center gap-2"
+                    className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:from-slate-700 disabled:to-slate-800 text-white font-bold rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
                   >
-                    {isBulkSending ? 'Mengirim...' : <><Send size={18} /> Kirim Tugas Sekarang</>}
+                    {isBulkSending ? 'Mengirim Transmisi...' : <><Send size={18} /> Kirim Misi</>}
                   </button>
                 </div>
              </div>
@@ -284,47 +276,47 @@ export const TeacherDashboard: React.FC = () => {
         {/* --- VIEW: LEADERBOARD --- */}
         {activeTab === 'leaderboard' && (
           <div className="space-y-6 animate-fade-in">
-             <h2 className="text-2xl font-extrabold text-black">Papan Peringkat</h2>
+             <h2 className="text-2xl font-extrabold text-white">Hall of Fame</h2>
 
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* School Leaderboard */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                   <div className="p-6 bg-gradient-to-r from-amber-400 to-orange-400 text-white">
-                      <h3 className="font-bold text-lg flex items-center gap-2"><Trophy /> Top 10 Siswa (Sekolah)</h3>
+                <div className="glass-panel rounded-2xl overflow-hidden border-amber-500/30">
+                   <div className="p-6 bg-gradient-to-r from-amber-600/80 to-orange-600/80 text-white backdrop-blur-md">
+                      <h3 className="font-bold text-lg flex items-center gap-2"><Trophy className="text-yellow-200" /> Top 10 Elite (Sekolah)</h3>
                    </div>
                    <div className="p-0">
                       {schoolLeaderboard.map((student, index) => (
-                        <div key={student.id} className="flex items-center justify-between p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                        <div key={student.id} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
                            <div className="flex items-center gap-4">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index < 3 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index < 3 ? 'bg-amber-400 text-amber-900 shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'bg-slate-700 text-slate-300'}`}>
                                  #{index + 1}
                               </div>
                               <div>
-                                <p className="font-bold text-black">{student.name}</p>
-                                <p className="text-xs text-slate-500">Kelas {student.class}</p>
+                                <p className="font-bold text-white">{student.name}</p>
+                                <p className="text-xs text-slate-400">Kelas {student.class}</p>
                               </div>
                            </div>
-                           <div className="font-extrabold text-emerald-600">{student.totalXp} XP</div>
+                           <div className="font-extrabold text-cyan-400">{student.totalXp} XP</div>
                         </div>
                       ))}
                    </div>
                 </div>
 
                 {/* Class Leaderboard */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden h-fit">
-                   <div className="p-6 bg-emerald-600 text-white">
-                      <h3 className="font-bold text-lg flex items-center gap-2"><Medal /> Kelas Terrajin (Rata-rata XP)</h3>
+                <div className="glass-panel rounded-2xl overflow-hidden border-cyan-500/30 h-fit">
+                   <div className="p-6 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 text-white backdrop-blur-md">
+                      <h3 className="font-bold text-lg flex items-center gap-2"><Medal className="text-cyan-200" /> Sektor Terbaik (Rata-rata XP)</h3>
                    </div>
                    <div className="p-0">
                       {classLeaderboard.map((cls, index) => (
-                        <div key={cls.className} className="flex items-center justify-between p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                        <div key={cls.className} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
                            <div className="flex items-center gap-4">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index < 3 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index < 3 ? 'bg-cyan-400 text-cyan-900 shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-slate-700 text-slate-300'}`}>
                                  #{index + 1}
                               </div>
-                              <p className="font-bold text-black">Kelas {cls.className}</p>
+                              <p className="font-bold text-white">Kelas {cls.className}</p>
                            </div>
-                           <div className="font-extrabold text-amber-600">{cls.avgXp} XP <span className="text-xs text-slate-400 font-normal">/siswa</span></div>
+                           <div className="font-extrabold text-amber-400">{cls.avgXp} XP <span className="text-xs text-slate-500 font-normal">/astro</span></div>
                         </div>
                       ))}
                    </div>
@@ -336,61 +328,61 @@ export const TeacherDashboard: React.FC = () => {
         {/* --- VIEW: STUDENT MANAGEMENT --- */}
         {activeTab === 'students' && (
           <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-between items-center">
-               <h2 className="text-2xl font-extrabold text-black">Daftar Siswa Kelas {user?.selectedClass}</h2>
+            <div className="flex justify-between items-center flex-wrap gap-4">
+               <h2 className="text-2xl font-extrabold text-white">Manifest Kru Sektor {user?.selectedClass}</h2>
                <div className="relative">
                  <Search className="absolute left-3 top-3 text-slate-400" size={18} />
                  <input 
                    type="text" 
-                   placeholder="Cari nama siswa..." 
+                   placeholder="Cari nama kru..." 
                    value={searchTerm}
                    onChange={(e) => setSearchTerm(e.target.value)}
-                   className="pl-10 pr-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-64"
+                   className="pl-10 pr-4 py-2 rounded-xl bg-black/40 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 w-64 placeholder-slate-500"
                  />
                </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="glass-panel rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-extrabold">
+                  <thead className="bg-white/5 text-cyan-200 text-xs uppercase font-extrabold tracking-wider border-b border-white/10">
                     <tr>
-                      <th className="px-6 py-4">Nama Siswa</th>
-                      <th className="px-6 py-4">Level</th>
+                      <th className="px-6 py-4">Nama Kru</th>
+                      <th className="px-6 py-4">Pangkat</th>
                       <th className="px-6 py-4">Total XP</th>
-                      <th className="px-6 py-4 text-center">Jurnal</th>
-                      <th className="px-6 py-4 text-center">Tugas</th>
+                      <th className="px-6 py-4 text-center">Laporan</th>
+                      <th className="px-6 py-4 text-center">Misi</th>
                       <th className="px-6 py-4">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-white/5 text-sm">
                     {filteredStudents.length === 0 ? (
-                      <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">Tidak ada siswa ditemukan.</td></tr>
+                      <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">Tidak ada data kru ditemukan.</td></tr>
                     ) : (
                       filteredStudents.map(student => (
-                        <tr key={student.id} className="hover:bg-slate-50 transition-colors">
+                        <tr key={student.id} className="hover:bg-white/5 transition-colors">
                           <td className="px-6 py-4">
-                            <div className="font-bold text-black">{student.name}</div>
-                            {student.password && <div className="text-xs text-slate-400 font-mono mt-0.5">{student.password}</div>}
+                            <div className="font-bold text-white">{student.name}</div>
+                            {student.password && <div className="text-xs text-slate-500 font-mono mt-0.5">{student.password}</div>}
                           </td>
                           <td className="px-6 py-4">
-                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                               {student.levelTitle}
                             </span>
                           </td>
-                          <td className="px-6 py-4 font-bold text-emerald-600">{student.totalXp}</td>
+                          <td className="px-6 py-4 font-bold text-cyan-400">{student.totalXp}</td>
                           <td className="px-6 py-4 text-center">
                             {student.journalEntry ? (
                               <div className="group relative inline-block">
-                                <CheckCircle className="text-emerald-500 w-5 h-5 cursor-help mx-auto" />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10">
+                                <CheckCircle className="text-emerald-400 w-5 h-5 cursor-help mx-auto drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]" />
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900 border border-white/10 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 shadow-xl">
                                   "{student.journalEntry}"
                                 </div>
                               </div>
-                            ) : <XCircle className="text-slate-300 w-5 h-5 mx-auto" />}
+                            ) : <XCircle className="text-slate-600 w-5 h-5 mx-auto" />}
                           </td>
                           <td className="px-6 py-4 text-center">
-                             {student.isExtraTaskCompleted ? <CheckCircle className="text-emerald-500 w-5 h-5 mx-auto" /> : (student.extraTask ? <span className="text-xs font-bold text-amber-500">Pending</span> : <span className="text-slate-300">-</span>)}
+                             {student.isExtraTaskCompleted ? <CheckCircle className="text-emerald-400 w-5 h-5 mx-auto" /> : (student.extraTask ? <span className="text-xs font-bold text-amber-400 animate-pulse">Pending</span> : <span className="text-slate-600">-</span>)}
                           </td>
                           <td className="px-6 py-4">
                             {selectedStudentId === student.id ? (
@@ -398,20 +390,20 @@ export const TeacherDashboard: React.FC = () => {
                                 <input 
                                   autoFocus
                                   type="text" 
-                                  className="text-sm border rounded px-2 py-1 w-32"
-                                  placeholder="Tugas..."
+                                  className="text-sm bg-black/50 border border-white/20 rounded px-2 py-1 w-32 text-white focus:outline-none focus:border-cyan-500"
+                                  placeholder="Misi..."
                                   value={taskInput}
                                   onChange={(e) => setTaskInput(e.target.value)}
                                 />
-                                <button onClick={handleAssignTask} className="bg-emerald-600 text-white p-1 rounded"><Send size={14} /></button>
-                                <button onClick={() => setSelectedStudentId(null)} className="text-red-500 p-1"><XCircle size={14} /></button>
+                                <button onClick={handleAssignTask} className="bg-cyan-600 text-white p-1 rounded hover:bg-cyan-500"><Send size={14} /></button>
+                                <button onClick={() => setSelectedStudentId(null)} className="text-red-400 p-1 hover:text-red-300"><XCircle size={14} /></button>
                               </div>
                             ) : (
                               <button 
                                 onClick={() => { setSelectedStudentId(student.id); setTaskInput(student.extraTask || ''); }}
-                                className="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
+                                className="text-xs font-bold text-cyan-300 bg-cyan-900/30 hover:bg-cyan-800/50 border border-cyan-500/30 px-3 py-1.5 rounded-lg transition-colors"
                               >
-                                {student.extraTask ? 'Edit Tugas' : 'Beri Tugas'}
+                                {student.extraTask ? 'Edit Misi' : 'Beri Misi'}
                               </button>
                             )}
                           </td>
@@ -429,21 +421,21 @@ export const TeacherDashboard: React.FC = () => {
 
       {/* Add Student Modal */}
       {showAddModal && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-             <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-                <h3 className="font-bold text-lg text-black mb-4">Tambah Siswa Baru</h3>
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+             <div className="bg-[#1A1A2E] rounded-2xl p-6 w-full max-w-sm shadow-[0_0_30px_rgba(8,145,178,0.3)] border border-white/10">
+                <h3 className="font-bold text-lg text-white mb-4">Rekrut Kru Baru</h3>
                 <form onSubmit={handleAddStudent}>
                   <input 
                     type="text" 
-                    placeholder="Nama Lengkap Siswa"
+                    placeholder="Nama Lengkap"
                     value={newStudentName}
                     onChange={(e) => setNewStudentName(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-4"
+                    className="w-full p-3 rounded-xl bg-black/40 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-4"
                     autoFocus
                   />
                   <div className="flex gap-3">
-                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2 rounded-xl border border-slate-300 font-bold">Batal</button>
-                    <button type="submit" className="flex-1 py-2 rounded-xl bg-emerald-600 text-white font-bold">Simpan</button>
+                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2 rounded-xl border border-white/20 text-slate-300 hover:bg-white/5 font-bold">Batal</button>
+                    <button type="submit" className="flex-1 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold shadow-lg">Simpan</button>
                   </div>
                 </form>
              </div>

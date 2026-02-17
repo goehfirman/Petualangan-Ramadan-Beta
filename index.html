@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jurnal Ramadan Gamifikasi</title>
+    <title>Petualangan Ramadan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -14,8 +14,26 @@
               sans: ['Fredoka', 'sans-serif'],
             },
             colors: {
-              emerald: {
-                450: '#10b981', // Custom adjustments if needed
+              space: {
+                dark: '#0B0B19',
+                light: '#1F1F35',
+                accent: '#6366F1', // Indigo
+                glow: '#22D3EE', // Cyan neon
+              }
+            },
+            animation: {
+              'float': 'float 6s ease-in-out infinite',
+              'twinkle': 'twinkle 4s ease-in-out infinite',
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' },
+              },
+              twinkle: {
+                '0%, 100%': { opacity: '1' },
+                '50%': { opacity: '0.3' },
               }
             }
           },
@@ -25,21 +43,43 @@
     <style>
       body {
         font-family: 'Fredoka', sans-serif;
-        background-color: #f0fdf4; /* emerald-50 */
+        background-color: #0B0B19; /* Space Dark */
+        background-image: 
+          radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+          radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+          radial-gradient(rgba(255,255,255,.1), rgba(255,255,255,.1) 2px, transparent 3px);
+        background-size: 550px 550px, 350px 350px, 250px 250px;
+        background-position: 0 0, 40px 60px, 130px 270px;
+        color: white;
       }
-      /* Custom scrollbar for better aesthetics on dashboard */
+      
+      /* Glassmorphism Utilities */
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .glass-input {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+
+      /* Custom scrollbar for dark theme */
       ::-webkit-scrollbar {
         width: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #ecfdf5;
+        background: #0f172a;
       }
       ::-webkit-scrollbar-thumb {
-        background: #34d399;
+        background: #4f46e5;
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #10b981;
+        background: #6366f1;
       }
     </style>
   <script type="importmap">
