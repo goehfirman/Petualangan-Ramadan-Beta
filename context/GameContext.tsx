@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Student, User, Role, LEVEL_TITLES, Mission } from '../types';
-import { INITIAL_MISSIONS } from '../constants';
+import { INITIAL_MISSIONS, MOCK_STUDENTS } from '../constants';
 import { db } from '../lib/firebase';
 import { 
   collection, 
@@ -18,7 +18,7 @@ interface GameContextType {
   user: User | null;
   students: Student[];
   loginTeacher: (name: string, selectedClass: string) => void;
-  loginStudent: (studentId: string) => Promise<void>;
+  loginStudent: (studentId: string, password: string) => Promise<boolean>;
   logout: () => void;
   toggleMission: (studentId: string, missionId: string) => void;
   updateJournal: (studentId: string, text: string) => void;
@@ -33,7 +33,8 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
+  // Initialize with MOCK_STUDENTS so data appears immediately even if DB is not connected
+  const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS);
 
   // 1. Real-time Listener for Students Data
   useEffect(() => {
@@ -43,16 +44,22 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: doc.id,
         ...doc.data()
       } as Student));
-      setStudents(fetchedStudents);
       
-      // Update local user state if the logged-in user is a student and data changed
-      if (user?.role === 'student') {
-        const currentUserData = fetchedStudents.find(s => s.id === user.id);
-        if (currentUserData) {
-          // Keep user session details but update name/class if changed
-          setUser(prev => prev ? { ...prev, name: currentUserData.name, selectedClass: currentUserData.class } : null);
+      // Only overwrite mock data if we actually got data from the database
+      if (fetchedStudents.length > 0) {
+        setStudents(fetchedStudents);
+        
+        // Update local user state if the logged-in user is a student and data changed
+        if (user?.role === 'student') {
+          const currentUserData = fetchedStudents.find(s => s.id === user.id);
+          if (currentUserData) {
+            // Keep user session details but update name/class if changed
+            setUser(prev => prev ? { ...prev, name: currentUserData.name, selectedClass: currentUserData.class } : null);
+          }
         }
       }
+    }, (error) => {
+       console.log("Firebase connection error (using mock data):", error);
     });
 
     return () => unsubscribe();
@@ -73,16 +80,21 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const loginStudent = async (studentId: string) => {
+  const loginStudent = async (studentId: string, password: string): Promise<boolean> => {
     const student = students.find(s => s.id === studentId);
-    if (student) {
+    
+    // Check if student exists and password matches
+    // Note: In a real app, use bcrypt or similar. Here we use simple string comparison for the school project.
+    if (student && student.password === password) {
       setUser({ 
         id: student.id, 
         name: student.name, 
         role: 'student',
         selectedClass: student.class
       });
+      return true;
     }
+    return false;
   };
 
   const logout = () => {
@@ -107,13 +119,16 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await setDoc(doc(db, 'students', id), newStudent);
     } catch (e) {
       console.error("Error adding student: ", e);
-      alert("Gagal menyimpan ke database. Cek koneksi internet.");
+      // Fallback for local update if DB fails
+      setStudents(prev => [...prev, newStudent]);
+      alert("Mode Offline: Data disimpan sementara di browser.");
     }
   };
 
   // Import batch to Firebase
   const importStudents = async (data: { name: string; password?: string }[], className: string) => {
     const batch = writeBatch(db);
+    const tempStudents: Student[] = [];
     
     data.forEach((item) => {
       const id = `s-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -132,6 +147,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (newStudent.name.length > 0) {
         const ref = doc(db, 'students', id);
         batch.set(ref, newStudent);
+        tempStudents.push(newStudent);
       }
     });
 
@@ -139,7 +155,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await batch.commit();
     } catch (e) {
       console.error("Batch commit failed", e);
-      alert("Gagal import database. Pastikan konfigurasi Firebase benar.");
+      // Fallback local
+      setStudents(prev => [...prev, ...tempStudents]);
+      alert("Mode Offline: Data disimpan sementara di browser.");
     }
   };
 
@@ -157,6 +175,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (mission) {
        newTotalXp = mission.completed ? newTotalXp - mission.xp : newTotalXp + mission.xp;
     }
+    
+    // Optimistic Update
+    setStudents(prev => prev.map(s => s.id === studentId ? {
+        ...s,
+        missions: updatedMissions,
+        totalXp: newTotalXp,
+        levelTitle: getLevelTitle(newTotalXp)
+    } : s));
 
     try {
       const studentRef = doc(db, 'students', studentId);
@@ -166,7 +192,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         levelTitle: getLevelTitle(newTotalXp)
       });
     } catch (e) {
-      console.error("Error updating mission", e);
+      console.error("Error updating mission (offline mode)", e);
     }
   };
 
@@ -180,6 +206,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isCompleted) newTotalXp += 50;
     else newTotalXp -= 50;
 
+    // Optimistic Update
+    setStudents(prev => prev.map(s => s.id === studentId ? {
+        ...s,
+        isExtraTaskCompleted: isCompleted,
+        totalXp: newTotalXp,
+        levelTitle: getLevelTitle(newTotalXp)
+    } : s));
+
     try {
       await updateDoc(doc(db, 'students', studentId), {
         isExtraTaskCompleted: isCompleted,
@@ -192,6 +226,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateJournal = async (studentId: string, text: string) => {
+    // Optimistic Update
+    setStudents(prev => prev.map(s => s.id === studentId ? { ...s, journalEntry: text } : s));
+    
     try {
       await updateDoc(doc(db, 'students', studentId), { journalEntry: text });
     } catch (e) {
@@ -200,6 +237,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const assignExtraTask = async (studentId: string, task: string) => {
+    // Optimistic Update
+    setStudents(prev => prev.map(s => s.id === studentId ? { ...s, extraTask: task, isExtraTaskCompleted: false } : s));
+
     try {
       await updateDoc(doc(db, 'students', studentId), { 
         extraTask: task,
@@ -221,6 +261,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       targets = students.filter(s => s.class === className);
     }
 
+    // Optimistic Update
+    setStudents(prev => prev.map(s => {
+        if (className === 'ALL' || s.class === className) {
+            return { ...s, extraTask: task, isExtraTaskCompleted: false };
+        }
+        return s;
+    }));
+
     targets.forEach(s => {
       const ref = doc(db, 'students', s.id);
       batch.update(ref, { 
@@ -233,7 +281,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await batch.commit();
     } catch (e) {
       console.error("Error batch assigning task", e);
-      throw e;
     }
   };
 

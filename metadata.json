@@ -1,5 +1,7 @@
 {
   "name": "Petualangan Ramadan",
   "description": "A gamified space-themed Ramadan journal application for elementary students.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

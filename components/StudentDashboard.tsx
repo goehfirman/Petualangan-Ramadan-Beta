@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
 import { GamificationCard } from './GamificationCard';
 import { DashboardHeader } from './DashboardHeader';
 import { StudentLeaderboard } from './StudentLeaderboard';
-import { Save, Sparkles, MessageSquarePlus, Rocket } from 'lucide-react';
+import { PrayerCompass } from './PrayerCompass';
+import { EduSection } from './EduSection';
+import { QuranTips } from './QuranTips';
+import { Save, Sparkles, MessageSquarePlus, Rocket, Quote } from 'lucide-react';
+import { RAMADAN_QUOTES } from '../constants';
 
 export const StudentDashboard: React.FC = () => {
   const { user, students, toggleMission, updateJournal, logout, toggleExtraTask } = useGame();
@@ -13,6 +17,12 @@ export const StudentDashboard: React.FC = () => {
   
   const [journalText, setJournalText] = useState(student?.journalEntry || '');
   const [isSaved, setIsSaved] = useState(false);
+
+  // Daily Quote Logic (Cycle based on Day of Month or simply random for now)
+  const todayQuote = useMemo(() => {
+    const day = new Date().getDate();
+    return RAMADAN_QUOTES[(day - 1) % RAMADAN_QUOTES.length];
+  }, []);
 
   if (!student) return <div className="text-white text-center mt-20">Mencari data astronaut...</div>;
 
@@ -28,6 +38,18 @@ export const StudentDashboard: React.FC = () => {
         
         {/* Header Section */}
         <DashboardHeader student={student} onLogout={logout} />
+
+        {/* Prayer Times & Qibla Widget */}
+        <PrayerCompass />
+
+        {/* Daily Quote Widget */}
+        <div className="mb-8 relative p-6 glass-panel rounded-2xl border-amber-500/20 text-center">
+            <Quote className="absolute top-4 left-4 text-amber-500/30 w-8 h-8 rotate-180" />
+            <p className="text-amber-100 font-medium italic relative z-10 text-sm">
+                "{todayQuote}"
+            </p>
+            <Quote className="absolute bottom-4 right-4 text-amber-500/30 w-8 h-8" />
+        </div>
 
         {/* Extra Task Section (Conditional) */}
         {student.extraTask && (
@@ -61,7 +83,7 @@ export const StudentDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Missions Grid */}
+        {/* Daily Missions Grid (Updated with Infaq, Dhikr, Matsurat) */}
         <div className="mb-8">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2 drop-shadow-md">
             <Rocket className="text-cyan-400" />
@@ -81,11 +103,17 @@ export const StudentDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Educational Section (Fiqh) */}
+        <EduSection />
+
+        {/* Quran Khatam Tips */}
+        <QuranTips />
+
         {/* Leaderboard Section */}
         <StudentLeaderboard students={students} currentStudent={student} />
 
         {/* Journal Entry */}
-        <div className="glass-panel rounded-[30px] p-6 shadow-sm border border-white/10">
+        <div className="glass-panel rounded-[30px] p-6 shadow-sm border border-white/10 mb-8">
           <label className="block text-cyan-200 font-bold mb-3 text-lg flex items-center gap-2">
             <Sparkles className="text-cyan-400 w-5 h-5" /> Catatan Harian
           </label>
@@ -111,6 +139,20 @@ export const StudentDashboard: React.FC = () => {
           >
             {isSaved ? 'Laporan Diterima!' : <><Save size={20} /> Kirim Laporan</>}
           </button>
+        </div>
+
+        {/* Kaffaratul Majlis (Closing Dua) */}
+        <div className="glass-panel rounded-2xl p-6 border-slate-700 bg-slate-900/50 text-center">
+            <p className="text-xs text-slate-400 uppercase font-bold tracking-widest mb-3">Doa Penutup Majelis</p>
+            <p className="text-xl font-arabic leading-loose text-white mb-2">
+                سُبْحَانَكَ اللّٰهُمَّ وبِحَمْدِكَ أَشْهَدُ أَنْ لَا إِلٰهَ إِلَّا أَنْتَ أَسْتَغْفِرُكَ وَأَتُوْبُ إِلَيْكَ
+            </p>
+            <p className="text-xs text-slate-400 italic mb-2">
+                Subḫânakallâhumma wa biḫamdika asyhadu an-lâilâha illâ anta astaghfiruka wa atûbu ilaik.
+            </p>
+            <p className="text-xs text-slate-500">
+                "Mahasuci Engkau, ya Allah. Segala sanjungan untuk-Mu. Aku bersaksi bahwa tiada tuhan melainkan Engkau. Aku memohon ampun dan bertaubat kepada-Mu."
+            </p>
         </div>
 
       </div>

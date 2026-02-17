@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
-import { User, GraduationCap, Rocket, Lock, School, ChevronRight, Trophy, Crown, Medal, Sparkles } from 'lucide-react';
+import { User, GraduationCap, Rocket, Lock, School, ChevronRight, Trophy, Crown, Medal, Sparkles, Key, ArrowLeft } from 'lucide-react';
 import { TEACHERS_LIST, CLASSES_LIST } from '../constants';
 
 export const LoginScreen: React.FC = () => {
@@ -16,6 +16,9 @@ export const LoginScreen: React.FC = () => {
 
   // Student State
   const [selectedStudentClass, setSelectedStudentClass] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [studentPassword, setStudentPassword] = useState('');
+  const [studentError, setStudentError] = useState('');
 
   // Public Leaderboard State
   const [leaderboardView, setLeaderboardView] = useState<'school' | 'class'>('school');
@@ -49,7 +52,24 @@ export const LoginScreen: React.FC = () => {
     loginTeacher(selectedTeacher, selectedTeacherClass);
   };
 
+  const handleStudentLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudentId || !studentPassword) {
+      setStudentError('Masukkan kode akses.');
+      return;
+    }
+
+    const success = await loginStudent(selectedStudentId, studentPassword);
+    if (!success) {
+      setStudentError('Kode akses (password) salah!');
+      setStudentPassword('');
+    } else {
+      setStudentError('');
+    }
+  };
+
   const classStudents = students.filter(s => s.class === selectedStudentClass);
+  const selectedStudentName = students.find(s => s.id === selectedStudentId)?.name;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-y-auto">
@@ -77,13 +97,13 @@ export const LoginScreen: React.FC = () => {
             {/* Tabs */}
             <div className="flex border-b border-white/10">
               <button 
-                onClick={() => setActiveTab('teacher')}
+                onClick={() => { setActiveTab('teacher'); setError(''); }}
                 className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === 'teacher' ? 'bg-white/10 text-cyan-300 border-b-2 border-cyan-400 shadow-[inset_0_0_20px_rgba(34,211,238,0.2)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
               >
                 <GraduationCap size={18} /> GURU
               </button>
               <button 
-                onClick={() => setActiveTab('student')}
+                onClick={() => { setActiveTab('student'); setStudentError(''); }}
                 className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === 'student' ? 'bg-white/10 text-amber-300 border-b-2 border-amber-400 shadow-[inset_0_0_20px_rgba(251,191,36,0.2)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
               >
                 <User size={18} /> MURID
@@ -149,44 +169,90 @@ export const LoginScreen: React.FC = () => {
                 </form>
               ) : (
                 <div className="space-y-5">
-                   <div>
-                    <label className="block text-sm font-bold text-amber-100 mb-2">Pilih Sektor (Kelas)</label>
-                    <div className="relative">
-                      <School className="absolute left-3 top-3.5 text-slate-400" size={18} />
-                      <select 
-                        value={selectedStudentClass}
-                        onChange={(e) => setSelectedStudentClass(e.target.value)}
-                        className="w-full p-3 pl-10 rounded-xl glass-input focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
-                      >
-                        <option value="" className="bg-slate-900">Pilih Kelas...</option>
-                        {CLASSES_LIST.map((c, idx) => (
-                          <option key={idx} value={c} className="bg-slate-900">{c}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {selectedStudentClass && (
-                    <div className="animate-fade-in">
-                      <label className="block text-sm font-bold text-amber-100 mb-2">Pilih Astronaut</label>
-                      <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
-                        {classStudents.length === 0 ? (
-                          <p className="text-slate-400 text-center py-4 text-sm">Belum ada astronaut di sektor ini.</p>
-                        ) : (
-                          classStudents.map((student) => (
-                            <button
-                              key={student.id}
-                              onClick={() => loginStudent(student.id)}
-                              className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-amber-500/20 border border-white/5 hover:border-amber-400/50 transition-all text-left group"
+                   {!selectedStudentId ? (
+                     <>
+                        <div>
+                          <label className="block text-sm font-bold text-amber-100 mb-2">Pilih Sektor (Kelas)</label>
+                          <div className="relative">
+                            <School className="absolute left-3 top-3.5 text-slate-400" size={18} />
+                            <select 
+                              value={selectedStudentClass}
+                              onChange={(e) => setSelectedStudentClass(e.target.value)}
+                              className="w-full p-3 pl-10 rounded-xl glass-input focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                             >
-                              <span className="font-bold text-slate-200 group-hover:text-amber-300">{student.name}</span>
-                              <ChevronRight size={16} className="text-slate-500 group-hover:text-amber-400" />
-                            </button>
-                          ))
+                              <option value="" className="bg-slate-900">Pilih Kelas...</option>
+                              {CLASSES_LIST.map((c, idx) => (
+                                <option key={idx} value={c} className="bg-slate-900">{c}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {selectedStudentClass && (
+                          <div className="animate-fade-in">
+                            <label className="block text-sm font-bold text-amber-100 mb-2">Pilih Astronaut</label>
+                            <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                              {classStudents.length === 0 ? (
+                                <p className="text-slate-400 text-center py-4 text-sm">Belum ada astronaut di sektor ini.</p>
+                              ) : (
+                                classStudents.map((student) => (
+                                  <button
+                                    key={student.id}
+                                    onClick={() => { setSelectedStudentId(student.id); setStudentError(''); }}
+                                    className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-amber-500/20 border border-white/5 hover:border-amber-400/50 transition-all text-left group"
+                                  >
+                                    <span className="font-bold text-slate-200 group-hover:text-amber-300">{student.name}</span>
+                                    <ChevronRight size={16} className="text-slate-500 group-hover:text-amber-400" />
+                                  </button>
+                                ))
+                              )}
+                            </div>
+                          </div>
                         )}
-                      </div>
-                    </div>
-                  )}
+                     </>
+                   ) : (
+                     <form onSubmit={handleStudentLogin} className="animate-fade-in">
+                        <button 
+                          type="button" 
+                          onClick={() => { setSelectedStudentId(null); setStudentPassword(''); setStudentError(''); }}
+                          className="flex items-center gap-2 text-slate-400 hover:text-white mb-4 text-sm font-bold transition-colors"
+                        >
+                          <ArrowLeft size={16} /> Kembali pilih nama
+                        </button>
+                        
+                        <div className="text-center mb-6">
+                           <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-[0_0_20px_rgba(245,158,11,0.4)]">
+                              <User size={32} className="text-white" />
+                           </div>
+                           <h3 className="text-xl font-bold text-white">{selectedStudentName}</h3>
+                           <p className="text-amber-200/70 text-sm font-bold">{selectedStudentClass}</p>
+                        </div>
+
+                        <div className="mb-4">
+                          <label className="block text-sm font-bold text-amber-100 mb-2">Kode Akses Rahasia</label>
+                          <div className="relative">
+                            <Key className="absolute left-3 top-3.5 text-slate-400" size={18} />
+                            <input 
+                              type="password"
+                              value={studentPassword}
+                              onChange={(e) => setStudentPassword(e.target.value)}
+                              className="w-full p-3 pl-10 rounded-xl glass-input focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all placeholder-slate-500 tracking-widest"
+                              placeholder="****"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+
+                        {studentError && <p className="text-red-400 text-sm text-center font-bold bg-red-900/30 p-2 rounded-lg border border-red-500/50 mb-4">{studentError}</p>}
+
+                        <button 
+                          type="submit"
+                          className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-3.5 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-amber-400/50 transition-all transform active:scale-95 flex items-center justify-center gap-2"
+                        >
+                          <Rocket size={20} /> Luncurkan Misi
+                        </button>
+                     </form>
+                   )}
                 </div>
               )}
             </div>
